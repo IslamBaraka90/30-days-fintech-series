@@ -9,6 +9,7 @@ A hands-on tutorial series following [The FinTech Builder](https://thefintechbui
 - Optional: **Finnhub** API key (Day 2, free tier)
 - Optional: **FMP** paid WebSocket plan (Day 2, Day 4)
 - Day 4 requires **at least two providers** with valid credentials and verified clock synchronization
+- Day 5 is the Arc 1 capstone — it composes the provider, health, and calendar boundaries from Days 1–4
 
 ## Repository Structure
 
@@ -64,6 +65,14 @@ A hands-on tutorial series following [The FinTech Builder](https://thefintechbui
         ├── fixture.ts           # labeled three-provider synthetic captures
         ├── demo.ts              # deterministic quorum demo (no credentials)
         └── synchronize.test.ts  # consensus and provider-loss tests
+└── day-05-why-the-5-minute-candle-is-the-worst-way-to-sample/
+    ├── tsconfig.json
+    └── src/
+        ├── compare-bars.ts       # four bar-clock comparison (time, tick-imbalance, volume-imbalance, tick-run)
+        ├── build.ts             # live capture + calendar filter + bar comparison
+        ├── fixture.ts           # 240-trade synthetic stream with burst pattern
+        ├── demo.ts              # deterministic bar comparison demo (no credentials)
+        └── compare-bars.test.ts # lineage and merge-guard tests
 ```
 
 ## Quick Start (3 Steps)
@@ -402,6 +411,76 @@ The two tests verify:
 
 ---
 
+## Day 5 — Arc 1 Bar-Construction Capstone
+
+**What it does:** Captures one corrected, ordered provider trade lineage, filters it through the Day 4 teaching calendar to keep only regular-session trades, then compares four bar clocks on exactly that input: time bars, tick-imbalance bars, volume-imbalance bars, and tick-run bars.
+
+### Commands
+
+| Command | What it does | Credentials needed? |
+|---|---|---|
+| `npm run test:article:5` | Runs 2 tests (lineage + merge guard) | No |
+| `npm run typecheck:article:5` | Type-checks all Day 5 source files | No |
+| `npm run demo:article:5` | Runs the deterministic 240-trade fixture comparison | No |
+| `npm run article:5` | Live capture from one provider + bar comparison | Yes (one provider) |
+
+### Running the deterministic demo (no credentials)
+
+```bash
+npm run demo:article:5
+```
+
+This prints a JSON report comparing all four bar types on 240 synthetic trades with a burst pattern. The fixture uses 30-second time bars so the output stays compact.
+
+### Running the live capture
+
+Choose one provider and configure credentials as in Day 2:
+
+```dotenv
+MARKET_DATA_PROVIDER=alpaca
+SYMBOL=SPY
+CAPTURE_SECONDS=60
+MAX_EVENTS=50000
+TIME_BAR_SECONDS=300
+```
+
+Then run:
+
+```bash
+npm run article:5
+```
+
+The live command filters trades through the 09:30–16:00 `America/New_York` teaching schedule. If no trades fall inside the configured session, it stops and suggests the deterministic demo. It never falls back to fixture data.
+
+### Running the tests (no credentials)
+
+```bash
+npm run test:article:5
+```
+
+Expected output:
+
+```
+# tests 2
+# pass 2
+# fail 0
+```
+
+The two tests verify:
+1. All four clocks consume the same 240-trade lineage (time, tick-imbalance, volume-imbalance, tick-run)
+2. Provider tapes cannot be silently merged (mixing Alpaca and Finnhub sources throws an error)
+
+### Optional Day 5 settings (in `.env`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `SYMBOL` | `SPY` | US equity ticker to capture |
+| `CAPTURE_SECONDS` | `60` | How long to capture (minimum 10) |
+| `MAX_EVENTS` | `50000` | Maximum events to capture |
+| `TIME_BAR_SECONDS` | `300` | Time bar interval in seconds (5 minutes) |
+
+---
+
 ## All npm Scripts Reference
 
 | Script | Description | Credentials |
@@ -421,6 +500,10 @@ The two tests verify:
 | `npm run typecheck:article:4` | Day 4 type check | No |
 | `npm run demo:article:4` | Day 4 deterministic quorum demo | No |
 | `npm run article:4` | Day 4 live concurrent capture + quorum report | At least 2 providers |
+| `npm run test:article:5` | Day 5 bar comparison tests | No |
+| `npm run typecheck:article:5` | Day 5 type check | No |
+| `npm run demo:article:5` | Day 5 deterministic bar comparison | No |
+| `npm run article:5` | Day 5 live capture + four-bar comparison | One provider |
 
 ---
 
@@ -539,6 +622,7 @@ node --version
 - **Capability-aware checks:** The quality gate only runs a stage if the provider supplies enough evidence. For example, Finnhub doesn't supply quotes, so quote geometry and staleness are reported as "unavailable" rather than failing.
 - **Feed health:** A separate set of checks that answer "is the feed usable right now?" — latency (only when clocks are comparable), gap classification (why is an interval empty?), schema drift (did the normalized contract change?), and point-in-time availability (was a value knowable at the time?).
 - **Multi-provider quorum:** Capturing multiple providers concurrently and aligning their observations. Previous-tick interpolation carries the last price forward with staleness tracking. Refresh-time sampling waits for every stream to advance. Consensus checks whether prices agree within a robust band. Calendar alignment labels which events belong to a regular session. Asynchronous-return diagnostics report interval overlap geometry without estimating covariance.
+- **Information-driven bars:** Time bars close on a clock interval. Tick-imbalance bars close when signed tick pressure crosses a frozen threshold. Volume-imbalance bars weight ticks by trade size. Tick-run bars track directional persistence. Each rule samples the same tape differently — the choice is explicit, not neutral.
 
 ## References
 

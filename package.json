@@ -18,7 +18,11 @@
     "article:4": "node --env-file=.env --experimental-strip-types day-04-multi-source-no-problem/src/build.ts",
     "demo:article:4": "node --experimental-strip-types day-04-multi-source-no-problem/src/demo.ts",
     "typecheck:article:4": "tsc --project day-04-multi-source-no-problem/tsconfig.json",
-    "test:article:4": "node --experimental-strip-types --test day-04-multi-source-no-problem/src/synchronize.test.ts"
+    "test:article:4": "node --experimental-strip-types --test day-04-multi-source-no-problem/src/synchronize.test.ts",
+    "article:5": "node --env-file=.env --experimental-strip-types day-05-why-the-5-minute-candle-is-the-worst-way-to-sample/src/build.ts",
+    "demo:article:5": "node --experimental-strip-types day-05-why-the-5-minute-candle-is-the-worst-way-to-sample/src/demo.ts",
+    "typecheck:article:5": "tsc --project day-05-why-the-5-minute-candle-is-the-worst-way-to-sample/tsconfig.json",
+    "test:article:5": "node --experimental-strip-types --test day-05-why-the-5-minute-candle-is-the-worst-way-to-sample/src/compare-bars.test.ts"
   },
   "keywords": [
     "FinTech",
