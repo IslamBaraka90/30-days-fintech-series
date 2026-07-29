@@ -1,0 +1,53 @@
+import type { MarketCaptureResult } from "../../day-02-your-price-feed-is-lying-to-you/src/providers/index.ts";
+
+export const HEALTH_FIXTURE: MarketCaptureResult = {
+  provider: {
+    provider: "alpaca",
+    feed: "fixture",
+    endpoint: "fixture://day-3",
+    trades: true,
+    quotes: false,
+    corrections: true,
+    cancelErrorsOrBreaks: true,
+    providerTradeIds: true,
+    sourceSequence: false,
+    notes: ["Deterministic teaching fixture; not a live market observation."],
+  },
+  trades: [],
+  tradeArrivals: [
+    {
+      tradeId: "fixture-1",
+      timestamp: "2025-01-02T14:30:00.000Z",
+      session: "2025-01-02",
+      symbol: "SPY",
+      price: 590,
+      volume: 100,
+      currency: "USD",
+      sequence: 1,
+      receivedAt: "2025-01-02T14:30:00.040Z",
+      conditions: [],
+      source: "alpaca",
+      feed: "fixture",
+    },
+    {
+      tradeId: "fixture-2",
+      timestamp: "2025-01-02T14:30:00.100Z",
+      session: "2025-01-02",
+      symbol: "SPY",
+      price: 590.01,
+      volume: 80,
+      currency: "USD",
+      sequence: 2,
+      receivedAt: "2025-01-02T14:30:00.145Z",
+      conditions: [],
+      source: "alpaca",
+      feed: "fixture",
+    },
+  ],
+  quotes: [],
+  corrections: [],
+  cancelErrors: [],
+  stoppedBy: "duration",
+  streamErrors: [],
+};
+HEALTH_FIXTURE.trades = [...HEALTH_FIXTURE.tradeArrivals];
