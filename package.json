@@ -10,7 +10,11 @@
     "typecheck:article:1": "tsc --project day-01-what-you-need-to-know-before-your-first-price-feed/tsconfig.json",
     "typecheck:article:2": "tsc --project day-02-your-price-feed-is-lying-to-you/tsconfig.json",
     "test:article:1": "node --experimental-strip-types day-01-what-you-need-to-know-before-your-first-price-feed/src/bars.test.ts",
-    "test:article:2": "node --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/quality.test.ts && node --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/provider-contract.test.ts"
+    "test:article:2": "node --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/quality.test.ts && node --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/provider-contract.test.ts",
+    "article:3": "node --env-file=.env --experimental-strip-types day-03-is-my-feed-healthy-right-now/src/build.ts",
+    "demo:article:3": "node --experimental-strip-types day-03-is-my-feed-healthy-right-now/src/demo.ts",
+    "typecheck:article:3": "tsc --project day-03-is-my-feed-healthy-right-now/tsconfig.json",
+    "test:article:3": "node --experimental-strip-types --test day-03-is-my-feed-healthy-right-now/src/health.test.ts"
   },
   "keywords": [
     "FinTech",

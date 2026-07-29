@@ -11,6 +11,8 @@ A hands-on tutorial series following [The FinTech Builder](https://thefintechbui
 
 ## Repository Structure
 
+> Day 3 reuses the Day 2 provider adapters and adds a feed health check.
+
 ```
 30-days-fintech-series/
 ├── package.json              # dependencies and npm scripts
@@ -45,6 +47,14 @@ A hands-on tutorial series following [The FinTech Builder](https://thefintechbui
         ├── demo.ts           # deterministic failure laboratory
         ├── quality.test.ts   # six-stage quality gate tests
         └── provider-contract.test.ts  # provider mapping + capability tests
+└── day-03-is-my-feed-healthy-right-now/
+    ├── tsconfig.json
+    └── src/
+        ├── health.ts        # four-algorithm feed health assessment
+        ├── build.ts         # live capture + health report (JSON)
+        ├── fixture.ts       # labeled synthetic capture for demo/tests
+        ├── demo.ts          # deterministic health demo (no credentials)
+        └── health.test.ts   # clock, gap, schema, and availability tests
 ```
 
 ## Quick Start (3 Steps)
@@ -242,6 +252,70 @@ Article #2 provider contract: mappings and capability-aware unavailable states p
 
 ---
 
+## Day 3 — Feed Health Check
+
+**What it does:** Reuses the Day 2 provider adapters and runs four health algorithms on the captured data: feed latency monitor, missing-bar gap classifier, schema-drift detector, and point-in-time availability guard. The result is a JSON health report with a top-level verdict of `healthy` or `attention`.
+
+### Commands
+
+| Command | What it does | Credentials needed? |
+|---|---|---|
+| `npm run test:article:3` | Runs 3 health tests (synchronized, unverified clocks, negative latency) | No |
+| `npm run typecheck:article:3` | Type-checks all Day 3 source files | No |
+| `npm run demo:article:3` | Runs the deterministic fixture health report | No |
+| `npm run article:3` | Live capture from selected provider + health report | Yes (depends on provider) |
+
+### Running the deterministic demo (no credentials)
+
+```bash
+npm run demo:article:3
+```
+
+This prints a JSON health report from a labeled synthetic fixture with two trades. The verdict is `healthy` because the fixture clocks are synchronized, no events are critical, a trade is present, the schema is unchanged, and no future-available record leaks into the snapshot.
+
+### Running the live capture
+
+Use the same `.env` provider configuration as Day 2, then:
+
+```bash
+npm run article:3
+```
+
+The live command never falls back to synthetic data. It outputs a JSON health report with latency percentiles, gap classification, schema drift status, and a point-in-time availability snapshot.
+
+### Running the tests (no credentials)
+
+```bash
+npm run test:article:3
+```
+
+Expected output:
+
+```
+# tests 3
+# pass 3
+# fail 0
+```
+
+The three tests verify:
+1. A synchronized deterministic capture is healthy
+2. Unverified clocks cannot produce a healthy latency verdict
+3. A negative observed latency is treated as a clock error
+
+### Optional Day 3 settings (in `.env`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `SYMBOL` | `SPY` | US equity ticker to capture |
+| `CAPTURE_SECONDS` | `30` | How long to capture (minimum 10) |
+| `MAX_EVENTS` | `25000` | Maximum events to capture |
+| `CLOCK_SYNC_VERIFIED` | `false` | Set `true` only after verifying host/source clock sync |
+| `CLOCK_MAX_OFFSET_MS` | `1` | Maximum clock offset in ms (only when `CLOCK_SYNC_VERIFIED=true`) |
+| `LATENCY_WARNING_MS` | `250` | Latency warning threshold in ms |
+| `LATENCY_CRITICAL_MS` | `1000` | Latency critical threshold in ms |
+
+---
+
 ## All npm Scripts Reference
 
 | Script | Description | Credentials |
@@ -253,6 +327,10 @@ Article #2 provider contract: mappings and capability-aware unavailable states p
 | `npm run typecheck:article:2` | Day 2 type check | No |
 | `npm run demo:article:2` | Day 2 deterministic failure lab | No |
 | `npm run article:2` | Day 2 live capture + quality gate | Depends on provider |
+| `npm run test:article:3` | Day 3 health tests | No |
+| `npm run typecheck:article:3` | Day 3 type check | No |
+| `npm run demo:article:3` | Day 3 deterministic health demo | No |
+| `npm run article:3` | Day 3 live capture + health report | Depends on provider |
 
 ---
 
@@ -312,6 +390,14 @@ All variables are optional unless marked **required**. Copy `.env.example` to `.
 | `ACTIVITY_EXPECTED` | `true` | Whether market activity is expected |
 | `CLOCK_SYNC_VERIFIED` | `false` | Set `true` only after verifying clock sync |
 
+### Day 3 Health Check Settings
+
+| Variable | Default | Description |
+|---|---|---|
+| `CLOCK_MAX_OFFSET_MS` | `1` | Maximum clock offset in ms (only when `CLOCK_SYNC_VERIFIED=true`) |
+| `LATENCY_WARNING_MS` | `250` | Latency warning threshold in ms |
+| `LATENCY_CRITICAL_MS` | `1000` | Latency critical threshold in ms |
+
 ---
 
 ## Troubleshooting
@@ -354,6 +440,7 @@ node --version
 - **Provider normalization:** Each provider (Alpaca, Finnhub, FMP) sends data in a different shape. The adapter layer normalizes them into one contract while preserving each provider's capabilities.
 - **Quality gate:** Six stages that clean and validate market data: OHLC consistency, causal Hampel filter, MAD outlier filter, quote geometry (crossed/locked markets), trade lifecycle (duplicates, corrections, cancels), and staleness detection.
 - **Capability-aware checks:** The quality gate only runs a stage if the provider supplies enough evidence. For example, Finnhub doesn't supply quotes, so quote geometry and staleness are reported as "unavailable" rather than failing.
+- **Feed health:** A separate set of checks that answer "is the feed usable right now?" — latency (only when clocks are comparable), gap classification (why is an interval empty?), schema drift (did the normalized contract change?), and point-in-time availability (was a value knowable at the time?).
 
 ## References
 
