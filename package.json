@@ -1,0 +1,32 @@
+{
+  "name": "30-days-fintech-series",
+  "version": "1.0.0",
+  "description": "A tutorial following repo for the Fintech 30 Day series by TheFintechBuilder.com",
+  "type": "module",
+  "scripts": {
+    "article:1": "node --env-file=.env --experimental-strip-types day-01-what-you-need-to-know-before-your-first-price-feed/src/build.ts",
+    "article:2": "node --env-file=.env --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/build.ts",
+    "demo:article:2": "node --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/demo.ts",
+    "typecheck:article:1": "tsc --project day-01-what-you-need-to-know-before-your-first-price-feed/tsconfig.json",
+    "typecheck:article:2": "tsc --project day-02-your-price-feed-is-lying-to-you/tsconfig.json",
+    "test:article:1": "node --experimental-strip-types day-01-what-you-need-to-know-before-your-first-price-feed/src/bars.test.ts",
+    "test:article:2": "node --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/quality.test.ts && node --experimental-strip-types day-02-your-price-feed-is-lying-to-you/src/provider-contract.test.ts"
+  },
+  "keywords": [
+    "FinTech",
+    "Algorithms",
+    "Data-feed"
+  ],
+  "author": "Islam Baraka",
+  "license": "MIT",
+  "dependencies": {
+    "@alpacahq/alpaca-trade-api": "^4.0.1",
+    "fintech-algorithms": "^0.3.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.6.0"
+  }
+}
