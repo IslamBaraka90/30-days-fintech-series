@@ -7,7 +7,8 @@ A hands-on tutorial series following [The FinTech Builder](https://thefintechbui
 - **Node.js 22 or newer** (required for `--experimental-strip-types` support)
 - An **Alpaca** account (free IEX feed is enough for Day 1 and Day 2)
 - Optional: **Finnhub** API key (Day 2, free tier)
-- Optional: **FMP** paid WebSocket plan (Day 2)
+- Optional: **FMP** paid WebSocket plan (Day 2, Day 4)
+- Day 4 requires **at least two providers** with valid credentials and verified clock synchronization
 
 ## Repository Structure
 
@@ -55,6 +56,14 @@ A hands-on tutorial series following [The FinTech Builder](https://thefintechbui
         ├── fixture.ts       # labeled synthetic capture for demo/tests
         ├── demo.ts          # deterministic health demo (no credentials)
         └── health.test.ts   # clock, gap, schema, and availability tests
+└── day-04-multi-source-no-problem/
+    ├── tsconfig.json
+    └── src/
+        ├── synchronize.ts       # six-algorithm multi-provider alignment
+        ├── build.ts             # live concurrent capture + quorum report
+        ├── fixture.ts           # labeled three-provider synthetic captures
+        ├── demo.ts              # deterministic quorum demo (no credentials)
+        └── synchronize.test.ts  # consensus and provider-loss tests
 ```
 
 ## Quick Start (3 Steps)
@@ -316,6 +325,83 @@ The three tests verify:
 
 ---
 
+## Day 4 — Multi-Provider Quorum and Synchronization
+
+**What it does:** Captures Alpaca, Finnhub, and FMP concurrently using `Promise.allSettled`, admits each through the Day 3 health check, then runs six synchronization algorithms: previous-tick interpolation, refresh-time sampling, price-source consensus check, linear quote interpolation, exchange-calendar alignment, and asynchronous-return diagnostics.
+
+### Commands
+
+| Command | What it does | Credentials needed? |
+|---|---|---|
+| `npm run test:article:4` | Runs 2 tests (consensus + provider loss) | No |
+| `npm run typecheck:article:4` | Type-checks all Day 4 source files | No |
+| `npm run demo:article:4` | Runs the deterministic three-provider fixture | No |
+| `npm run article:4` | Live concurrent capture from selected providers + quorum report | Yes (at least 2 providers) |
+
+### Running the deterministic demo (no credentials)
+
+```bash
+npm run demo:article:4
+```
+
+This prints a JSON synchronization report from a labeled synthetic fixture with three providers (Alpaca, Finnhub, FMP). The consensus status is `consensus` because all three prices agree within the tolerance band.
+
+### Running the live quorum
+
+Day 4 requires **verified clock synchronization** and **at least two successful providers**. Set these in `.env`:
+
+```dotenv
+CLOCK_SYNC_VERIFIED=true
+CLOCK_MAX_OFFSET_MS=1
+MARKET_DATA_PROVIDERS=alpaca,finnhub,fmp
+
+APCA_API_KEY_ID=your_key
+APCA_API_SECRET_KEY=your_secret
+FINNHUB_API_KEY=your_key
+FMP_API_KEY=your_key
+FMP_WEBSOCKET_URL=wss://your-cluster
+```
+
+Then run:
+
+```bash
+npm run article:4
+```
+
+If one provider fails but two succeed, the report contains the real failure and continues with the smaller quorum. If fewer than two succeed, it stops. The live command never falls back to fixture data.
+
+### Running the tests (no credentials)
+
+```bash
+npm run test:article:4
+```
+
+Expected output:
+
+```
+# tests 2
+# pass 2
+# fail 0
+```
+
+The two tests verify:
+1. Three provider streams form a contract-compatible consensus
+2. Provider loss is visible and never replaced by fixture data
+
+### Optional Day 4 settings (in `.env`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `MARKET_DATA_PROVIDERS` | `alpaca,finnhub,fmp` | Comma-separated providers to capture |
+| `SYMBOL` | `SPY` | US equity ticker to capture |
+| `CAPTURE_SECONDS` | `30` | How long to capture (minimum 10) |
+| `MAX_EVENTS` | `25000` | Maximum events per provider |
+| `MAX_SOURCE_AGE_MS` | `5000` | Maximum age in ms for a source observation to be eligible |
+| `CLOCK_SYNC_VERIFIED` | `false` | Must be `true` for live Day 4 runs |
+| `CLOCK_MAX_OFFSET_MS` | `1` | Maximum clock offset in ms |
+
+---
+
 ## All npm Scripts Reference
 
 | Script | Description | Credentials |
@@ -331,6 +417,10 @@ The three tests verify:
 | `npm run typecheck:article:3` | Day 3 type check | No |
 | `npm run demo:article:3` | Day 3 deterministic health demo | No |
 | `npm run article:3` | Day 3 live capture + health report | Depends on provider |
+| `npm run test:article:4` | Day 4 synchronization tests | No |
+| `npm run typecheck:article:4` | Day 4 type check | No |
+| `npm run demo:article:4` | Day 4 deterministic quorum demo | No |
+| `npm run article:4` | Day 4 live concurrent capture + quorum report | At least 2 providers |
 
 ---
 
@@ -398,6 +488,13 @@ All variables are optional unless marked **required**. Copy `.env.example` to `.
 | `LATENCY_WARNING_MS` | `250` | Latency warning threshold in ms |
 | `LATENCY_CRITICAL_MS` | `1000` | Latency critical threshold in ms |
 
+### Day 4 Multi-Source Settings
+
+| Variable | Default | Description |
+|---|---|---|
+| `MARKET_DATA_PROVIDERS` | `alpaca,finnhub,fmp` | Comma-separated providers to capture concurrently |
+| `MAX_SOURCE_AGE_MS` | `5000` | Maximum age in ms for source eligibility |
+
 ---
 
 ## Troubleshooting
@@ -441,6 +538,7 @@ node --version
 - **Quality gate:** Six stages that clean and validate market data: OHLC consistency, causal Hampel filter, MAD outlier filter, quote geometry (crossed/locked markets), trade lifecycle (duplicates, corrections, cancels), and staleness detection.
 - **Capability-aware checks:** The quality gate only runs a stage if the provider supplies enough evidence. For example, Finnhub doesn't supply quotes, so quote geometry and staleness are reported as "unavailable" rather than failing.
 - **Feed health:** A separate set of checks that answer "is the feed usable right now?" — latency (only when clocks are comparable), gap classification (why is an interval empty?), schema drift (did the normalized contract change?), and point-in-time availability (was a value knowable at the time?).
+- **Multi-provider quorum:** Capturing multiple providers concurrently and aligning their observations. Previous-tick interpolation carries the last price forward with staleness tracking. Refresh-time sampling waits for every stream to advance. Consensus checks whether prices agree within a robust band. Calendar alignment labels which events belong to a regular session. Asynchronous-return diagnostics report interval overlap geometry without estimating covariance.
 
 ## References
 

@@ -13,6 +13,7 @@
     "shared/**/*.ts",
     "day-01-what-you-need-to-know-before-your-first-price-feed/src/**/*.ts",
     "day-02-your-price-feed-is-lying-to-you/src/**/*.ts",
-    "day-03-is-my-feed-healthy-right-now/src/**/*.ts"
+    "day-03-is-my-feed-healthy-right-now/src/**/*.ts",
+    "day-04-multi-source-no-problem/src/**/*.ts"
   ]
 }

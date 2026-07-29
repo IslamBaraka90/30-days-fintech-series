@@ -14,7 +14,11 @@
     "article:3": "node --env-file=.env --experimental-strip-types day-03-is-my-feed-healthy-right-now/src/build.ts",
     "demo:article:3": "node --experimental-strip-types day-03-is-my-feed-healthy-right-now/src/demo.ts",
     "typecheck:article:3": "tsc --project day-03-is-my-feed-healthy-right-now/tsconfig.json",
-    "test:article:3": "node --experimental-strip-types --test day-03-is-my-feed-healthy-right-now/src/health.test.ts"
+    "test:article:3": "node --experimental-strip-types --test day-03-is-my-feed-healthy-right-now/src/health.test.ts",
+    "article:4": "node --env-file=.env --experimental-strip-types day-04-multi-source-no-problem/src/build.ts",
+    "demo:article:4": "node --experimental-strip-types day-04-multi-source-no-problem/src/demo.ts",
+    "typecheck:article:4": "tsc --project day-04-multi-source-no-problem/tsconfig.json",
+    "test:article:4": "node --experimental-strip-types --test day-04-multi-source-no-problem/src/synchronize.test.ts"
   },
   "keywords": [
     "FinTech",
